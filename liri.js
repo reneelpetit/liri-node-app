@@ -31,7 +31,28 @@ function runProgram() {
       console.log(response.choice);
       switch (response.choice) {
         case "Search for concerts":
-          concert_this();
+            inquirer
+            .prompt([
+              {
+                type: "input",
+                message: "Which band/artist would you like to search for?",
+                name: "bandName"
+              },
+            {
+              type: "input",
+              message: "And in which city?",
+              name: "city"
+            },
+            {
+              type: "input",
+              message: "And in which country?",
+              name: "country"
+            }
+            ]).then(function (response) {
+                console.log(response.bandName.toLowerCase());
+                //process.argv.slice(2).join('+');
+                concert_this(response.bandName.toLowerCase(), response.city.toLowerCase(), response.country.toLowerCase());
+              });
           break;
         case "Search a song":
             inquirer
@@ -71,26 +92,41 @@ function runProgram() {
 }
 //concert-this
 //search bands in town API for artist and print out name of venue, venue location & date of event
-function concert_this() {
-  //code
+function concert_this(artistName, city, country) {
+  console.log("artistName is " + artistName);
+  console.log("city " + city);
+  console.log("country" + country);
+  axios.
+  get("https://rest.bandsintown.com/artists/" + artistName + "/events?app_id=codingbootcamp").
+  then(function (response) {
+    console.log("inside the then response function")
+    var info = response.data;
+    console.log(info);
+    var date = response.data[0].datetime;
+    date = moment(date).format('MMMM Do YYYY, h:mm a');
+    console.log("I found an event on " + date);
+    var lineup = response.data[0].lineup;
+    console.log("The lineup is: " + lineup);
+    var venueCity = response.data[0].venue.city;
+    var venueCountry = response.data[0].venue.country;
+    console.log("The event will be held in: " + venueCity + ", " + venueCountry);
+    //console.log(response.data[0]);
+  });
+  
 }
 //spotify-this-song
 //print the following info: Artist(s), song name, preview of link to song, album, if no song provided default is the sign from ace of base
 function spotify_this_song(song) {
   //spotify set up
-  console.log("inside spotify function");
   var Spotify = require('node-spotify-api');
-  console.log(keys.spotify);
   var spotify = new Spotify(keys.spotify);
-  console.log("this is spotify" + spotify);
 
   spotify
     .search({ type: 'track', query: song })
     .then(function (response) {
       //var artist = response.track;
       //console.log(artist);
-      var items = response.tracks.items[0].album;
-      console.log(items);
+      console.log("Artist(s): ")
       var album = response.tracks.items[0].album.name;
       console.log("Album: " + album);
       var song_name = response.tracks.items[0].name;
