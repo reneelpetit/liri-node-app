@@ -4,6 +4,8 @@ const result = require('dotenv').config({ path: "C:/users/renee/liri/liri-node-a
 //keys set up
 var keys = require("./keys");
 
+var fs = require('fs');
+
 //moment set up
 var moment = require('moment');
 moment().format();
@@ -27,8 +29,6 @@ function runProgram() {
         name: "choice"
       }
     ]).then(function (response) {
-      console.log(response.username);
-      console.log(response.choice);
       switch (response.choice) {
         case "Search for concerts":
             inquirer
@@ -37,21 +37,9 @@ function runProgram() {
                 type: "input",
                 message: "Which band/artist would you like to search for?",
                 name: "bandName"
-              },
-            {
-              type: "input",
-              message: "And in which city?",
-              name: "city"
-            },
-            {
-              type: "input",
-              message: "And in which country?",
-              name: "country"
-            }
+              }
             ]).then(function (response) {
-                console.log(response.bandName.toLowerCase());
-                //process.argv.slice(2).join('+');
-                concert_this(response.bandName.toLowerCase(), response.city.toLowerCase(), response.country.toLowerCase());
+                concert_this(response.bandName.toLowerCase());
               });
           break;
         case "Search a song":
@@ -62,8 +50,6 @@ function runProgram() {
                 message: "Which song would you like to search for?",
                 name: "songName"
               }]).then(function (response) {
-                console.log(response.songName.toLowerCase());
-                //process.argv.slice(2).join('+');
                 spotify_this_song(response.songName.toLowerCase());
               });
           
@@ -76,8 +62,6 @@ function runProgram() {
                 message: "Which movie would you like to search?",
                 name: "movieName"
               }]).then(function (response) {
-                console.log(response.movieName.toLowerCase());
-                //process.argv.slice(2).join('+');
                 movie_this(response.movieName.toLowerCase());
               });
           break;
@@ -92,16 +76,10 @@ function runProgram() {
 }
 //concert-this
 //search bands in town API for artist and print out name of venue, venue location & date of event
-function concert_this(artistName, city, country) {
-  console.log("artistName is " + artistName);
-  console.log("city " + city);
-  console.log("country" + country);
+function concert_this(artistName) {
   axios.
   get("https://rest.bandsintown.com/artists/" + artistName + "/events?app_id=codingbootcamp").
   then(function (response) {
-    console.log("inside the then response function")
-    var info = response.data;
-    console.log(info);
     var date = response.data[0].datetime;
     date = moment(date).format('MMMM Do YYYY, h:mm a');
     console.log("I found an event on " + date);
@@ -110,9 +88,10 @@ function concert_this(artistName, city, country) {
     var venueCity = response.data[0].venue.city;
     var venueCountry = response.data[0].venue.country;
     console.log("The event will be held in: " + venueCity + ", " + venueCountry);
-    //console.log(response.data[0]);
+    runProgram();
+  }).catch(function (err) {
+    console.log(err);
   });
-  
 }
 //spotify-this-song
 //print the following info: Artist(s), song name, preview of link to song, album, if no song provided default is the sign from ace of base
@@ -124,9 +103,8 @@ function spotify_this_song(song) {
   spotify
     .search({ type: 'track', query: song })
     .then(function (response) {
-      //var artist = response.track;
-      //console.log(artist);
-      console.log("Artist(s): ")
+      var artist = response.tracks.items[0].artists[0].name;
+      console.log("Artist(s): " + artist);
       var album = response.tracks.items[0].album.name;
       console.log("Album: " + album);
       var song_name = response.tracks.items[0].name;
@@ -146,14 +124,10 @@ function movie_this(movieName) {
   // Then run a request with axios to the OMDB API with the movie specified
   var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=trilogy";
 
-  // This line is just to help us debug against the actual URL.
-  console.log(queryUrl);
-
   axios.get(queryUrl).then(
     function (response) {
       // var newResponse = response.JSONStringify();
       var database = response.data;
-      console.log(database);
       var title = response.data.Title;
       var year = response.data.Year;
       var imdb = response.data.imdbRating;
@@ -175,31 +149,15 @@ function movie_this(movieName) {
       console.log("Website: " + website);
       runProgram();
     })
-    .catch(function (error) {
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.log("---------------Data---------------");
-        console.log(error.response.data);
-        console.log("---------------Status---------------");
-        console.log(error.response.status);
-        console.log("---------------Status---------------");
-        console.log(error.response.headers);
-      } else if (error.request) {
-        // The request was made but no response was received
-        // `error.request` is an object that comes back with details pertaining to the error that occurred.
-        console.log(error.request);
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log("Error", error.message);
-      }
-      console.log(error.config);
+    .catch(function (err) {
+      console.log(err);
     });
 }
 //do-what-it-says
 //run "spotify-this-song for "I want it that way" in random.txt
 function do_what_it_says() {
   //code
+  fs.readFile("random.txt");
 }
 
 function quitLiri() {
