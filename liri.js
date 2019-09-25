@@ -66,6 +66,7 @@ function runProgram() {
               });
           break;
         case "Mysterious Random Choice: who knows what you'll get!":
+          console.log("Game of chance! Let's see what you get!")
           do_what_it_says();
           break;
         case "I'm done, quit please":
@@ -157,7 +158,25 @@ function movie_this(movieName) {
 //run "spotify-this-song for "I want it that way" in random.txt
 function do_what_it_says() {
   //code
-  fs.readFile("random.txt");
+  fs.readFile("random.txt", "utf8", function(error, data) {
+    if (error) {
+      console.log("error " + error);
+    }
+    
+    var dataArr = data.split(",");
+
+    if (dataArr[0] === 'spotify_this_song') {
+      spotify_this_song(dataArr[1]);
+    }
+
+    else if (dataArr[0] === 'movie_this') {
+      movie_this(dataArr[1]);
+    }
+
+    else if (dataArr[0] === 'concert_this') {
+      concert_this(dataArr[1]);
+    }
+  })
 }
 
 function quitLiri() {
