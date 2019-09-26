@@ -1,4 +1,4 @@
-console.log("hi this is working");
+
 //this is dotenv for storing API keys
 const result = require('dotenv').config({ path: "C:/users/renee/liri/liri-node-app/liri.env" });
 //keys set up
